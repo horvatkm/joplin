@@ -8,6 +8,7 @@ import ShareService from './services/share/ShareService';
 export interface CheckConfigResult {
 	ok: boolean;
 	errorMessage: string;
+	excludeIfNoneMatched?: boolean;
 }
 
 export default class BaseSyncTarget {

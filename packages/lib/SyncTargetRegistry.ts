@@ -105,4 +105,10 @@ export default class SyncTargetRegistry {
 		].includes(id);
 	}
 
+	public static isWebDav(id: number) {
+		return [
+			SyncTargetRegistry.nameToId('webdav'),
+		].includes(id);
+	}
+
 }

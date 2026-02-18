@@ -444,6 +444,8 @@ const builtInMetadata = (Setting: typeof SettingType) => {
 			secure: true,
 		},
 
+		'sync.6.excludeIfNoneMatched': { value: false, type: SettingItemType.Bool, public: false },
+
 		'sync.10.inboxEmail': { value: '', type: SettingItemType.String, public: false },
 
 		'sync.10.inboxId': { value: '', type: SettingItemType.String, public: false },

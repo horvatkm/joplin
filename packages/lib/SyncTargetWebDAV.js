@@ -42,6 +42,7 @@ class SyncTargetWebDAV extends BaseSyncTarget {
 			username: () => options.username(),
 			password: () => options.password(),
 			ignoreTlsErrors: () => options.ignoreTlsErrors(),
+			excludeIfNoneMatched: () => options.excludeIfNoneMatched(),
 		};
 
 		const api = new WebDavApi(apiOptions);
@@ -51,23 +52,40 @@ class SyncTargetWebDAV extends BaseSyncTarget {
 		return fileApi;
 	}
 
-	static async checkConfig(options) {
+	static async checkConfigVariant(options, excludeIfNoneMatched) {
+		options = { ... options };
+		options.excludeIfNoneMatched = () => {
+			return excludeIfNoneMatched;
+		};
 		const fileApi = await SyncTargetWebDAV.newFileApi_(SyncTargetWebDAV.id(), options);
 		fileApi.requestRepeatCount_ = 0;
+		checkProviderIsSupported(options.path());
+		const result = await fileApi.stat('');
+		if (!result) throw new Error(`WebDAV directory not found: ${options.path()}`);
+	}
 
+	static async checkConfig(options) {
 		const output = {
 			ok: false,
+			excludeIfNoneMatched: false,
 			errorMessage: '',
 		};
 
 		try {
-			checkProviderIsSupported(options.path());
-			const result = await fileApi.stat('');
-			if (!result) throw new Error(`WebDAV directory not found: ${options.path()}`);
+			await SyncTargetWebDAV.checkConfigVariant(options, false);
 			output.ok = true;
 		} catch (error) {
-			output.errorMessage = error.message;
-			if (error.code) output.errorMessage += ` (Code ${error.code})`;
+			try {
+				await SyncTargetWebDAV.checkConfigVariant(options, true);
+				output.ok = true;
+				output.excludeIfNoneMatched = true;
+			} catch (errorAlt) {
+				// ignore, we'll return error with excludeIfNoneMatched set to false
+			}
+			if (!output.ok) {
+				output.errorMessage = error.message;
+				if (error.code) output.errorMessage += ` (Code ${error.code})`;
+			}
 		}
 
 		return output;
@@ -79,6 +97,7 @@ class SyncTargetWebDAV extends BaseSyncTarget {
 			username: () => Setting.value('sync.6.username'),
 			password: () => Setting.value('sync.6.password'),
 			ignoreTlsErrors: () => Setting.value('net.ignoreTlsErrors'),
+			excludeIfNoneMatched: () => Setting.value('sync.6.excludeIfNoneMatched'),
 		});
 
 		fileApi.setLogger(this.logger());

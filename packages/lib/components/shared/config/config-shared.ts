@@ -83,6 +83,9 @@ export const checkSyncConfig = async (comp: ConfigScreenComponent, settings: any
 	comp.setState({ checkSyncConfigResult: result });
 
 	if (result.ok) {
+		if (SyncTargetRegistry.isWebDav(syncTargetId)) {
+			Setting.setValue('sync.6.excludeIfNoneMatched', result.excludeIfNoneMatched);
+		}
 		// Users often expect config to be auto-saved at this point, if the config check was successful
 		await saveSettings(comp);
 	}

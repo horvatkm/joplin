@@ -20,6 +20,7 @@ interface WebDavApiOptions {
 	username(): string;
 	password(): string;
 	ignoreTlsErrors?(): boolean;
+	excludeIfNoneMatched(): boolean;
 }
 
 interface LoggedRequest {
@@ -410,7 +411,9 @@ class WebDavApi {
 		// The "solution", an ugly one, is to send a purposely invalid string as eTag, which will bypass the If-None-Match check  - Seafile
 		// finds out that no resource has this ID and simply sends the requested data.
 		// Also add a random value to make sure the eTag is unique for each call.
-		if (['GET', 'HEAD'].indexOf(method) < 0) headers['If-None-Match'] = `JoplinIgnore-${Math.floor(Math.random() * 100000)}`;
+		if (['GET', 'HEAD'].indexOf(method) < 0 && !this.options_.excludeIfNoneMatched()) {
+			headers['If-None-Match'] = `JoplinIgnore-${Math.floor(Math.random() * 100000)}`;
+		}
 		if (!headers['User-Agent']) headers['User-Agent'] = 'Joplin/1.0';
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied

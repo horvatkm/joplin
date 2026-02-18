@@ -622,6 +622,7 @@ async function initFileApi() {
 			baseUrl: () => options.baseUrl,
 			username: () => options.username,
 			password: () => options.password,
+			excludeIfNoneMatched: () => options.excludeIfNoneMatched,
 		});
 		fileApi = new FileApi('', new FileApiDriverWebDav(api));
 	} else if (syncTargetId_ === SyncTargetRegistry.nameToId('dropbox')) {
